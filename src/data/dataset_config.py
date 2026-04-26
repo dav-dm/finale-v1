@@ -9,7 +9,7 @@ dataset_config = {
             f'{_BASE_DATA_PATH}/iot23_clean/'
             'iot23_dataset_df_obf_median_sampled_20pkts_6feats_rect-dir_botnet_clean_mirage_class_over_10.parquet'
         ),
-        'label_column': 'LABEL_FULL',
+        'label_column': 'LABEL',
     },
     'cic2018': {
         'path': (

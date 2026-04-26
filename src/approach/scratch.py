@@ -1,0 +1,27 @@
+from torch import nn
+
+from approach.dl_module import DLModule
+from util.config import load_config
+
+
+class Scratch(DLModule):
+    """
+    Class for a deep learning module that includes training and validation
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        cf = load_config()
+        self.criterion = nn.CrossEntropyLoss()
+    
+    
+    def _fit_step(self, batch_x, batch_y):
+        logits = self.net(batch_x)
+        loss = self.criterion(logits, batch_y)
+        return loss, logits
+                
+            
+    def _predict_step(self, batch_x, batch_y):
+        logits = self.net(batch_x)
+        loss = self.criterion(logits, batch_y)
+        return loss, logits
+  

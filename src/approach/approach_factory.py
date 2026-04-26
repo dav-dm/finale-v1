@@ -19,10 +19,7 @@ def get_approach_type(approach_name):
         raise ValueError(f"Approach '{approach_name}' not found in ML or DL approaches.")
     
 def is_approach_transfer_learning(approach_name, adapt_strat):
-    return (
-        (approach_name == 'baseline' and adapt_strat in ['finetuning', 'freezing'])
-        or approach_name in ['rfs']
-    )
+    return approach_name in ['rfs', 'baseline', 'baseline_pp', 'negative_margin']
 
 def get_approach(approach_name, datamodule=None, **kwargs):
     callbacks = [SaveOutputs(), TimeMeasurement()] # Base callbacks for both ML and DL approaches

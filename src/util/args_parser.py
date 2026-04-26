@@ -8,6 +8,8 @@ from approach import (
     XGB,
     KNN,
     Baseline,
+    RFS,
+    NegativeMargin,
     get_approach_type,
     is_approach_transfer_learning,
 )
@@ -23,6 +25,8 @@ def parse_arguments():
     parser = XGB.add_appr_specific_args(parser)
     parser = KNN.add_appr_specific_args(parser)
     parser = Baseline.add_appr_specific_args(parser)
+    parser = NegativeMargin.add_appr_specific_args(parser)
+    parser = RFS.add_appr_specific_args(parser)
     parser.add_argument('--seed', type=int, default=cf['seed'], help='Seed for reproducibility')
     parser.add_argument('--gpu', action='store_true', default=cf['gpu'], help='Use GPU if available')
     parser.add_argument('--n-thr', type=int, default=cf['n_thr'], help='Number of threads')
@@ -32,9 +36,9 @@ def parse_arguments():
     parser.add_argument('--ckpt-path', type=str, default=cf['ckpt_path'], 
                         help='Path to the .pt file containing the state of an approach')
     parser.add_argument('--skip-t1', action='store_true', default=cf['skip_t1'], 
-                        help='Skip the first task on src dataset, used only when n_task 2')
+                        help='Skip the first task on src dataset, used only when n_task 2') # TODO: implement
     parser.add_argument('--skip-t2', action='store_true', default=cf['skip_t2'], 
-                        help='Skip the second task on trg dataset, used only when n_task 2')
+                        help='Skip the second task on trg dataset, used only when n_task 2') # TODO: implement
     # Data args
     parser.add_argument('--datasets', type=str, default=cf['datasets'], 
                         help='Datasets to use', nargs='+', metavar='DATASET')

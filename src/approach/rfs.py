@@ -23,6 +23,9 @@ class RFS(DLModule):
         super().__init__(**kwargs)
         cf = load_config()
         
+        self.task = 'src'
+        self.classes_dict = self.num_classes
+        
         self.kd_T = kwargs.get('kd_t', cf['kd_t'])
         self.is_distill = kwargs.get('is_distill', cf['is_distill'])
         self.teacher_path = kwargs.get('teacher_path', cf['teacher_path'])
@@ -39,7 +42,6 @@ class RFS(DLModule):
             is_distill=self.is_distill, 
             teacher_path=self.teacher_path
         )
-        self.domain_discriminator = None
         self.nn_head = None
 
         
@@ -56,8 +58,8 @@ class RFS(DLModule):
     
     
     def _fit_step(self, batch_x, batch_y):
-        student_logits = self.net(batch_x)
-        teacher_logits = self.teacher(batch_x)
+        student_logits = self.net(batch_x)[self.task]
+        teacher_logits = self.teacher(batch_x)[self.task] if self.is_distill else None
         
         # CE on actual label and student logits
         gamma_loss = self.ce_loss(student_logits, batch_y)
@@ -69,8 +71,12 @@ class RFS(DLModule):
                 
             
     def _predict_step(self, batch_x, batch_y):
-        _, batch_emb = self.net(batch_x, return_feat=True)
-        logits = self.nn_head(batch_emb)
+        if self.task == 'src':
+            logits = self.net(batch_x)[self.task]
+        else:
+            _, batch_emb = self.net(batch_x, return_feat=True)
+            logits = self.nn_head(batch_emb)
+            
         loss = self.ce_loss(logits, batch_y)
         return loss, logits
         
@@ -96,8 +102,14 @@ class RFS(DLModule):
             labels.append(batch_y)
             
         # Add a new nearest neighbor head 
-        # self.nn_head = KNNHead()
         self.nn_head = NNHead()
         # Store train embedding and labels
         self.nn_head.fit(x=torch.cat(embeddings), y=torch.cat(labels))
+        
+        
+    def set_task(self, task):
+        if task not in ['src', 'trg']:
+            raise ValueError("Task should be either 'src' or 'trg'")
+        self.task = task
+        self.num_classes = self.classes_dict[self.task]
                 

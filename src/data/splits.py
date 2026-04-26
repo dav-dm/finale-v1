@@ -73,7 +73,7 @@ def _sample_k_per_class(data, k, k_seed):
 
     # Ensure every class has at least k samples
     if np.any(counts < k):
-        raise ValueError(f'Not all classes have at least {k} samples')
+        raise ValueError(f'Not all classes have at least {k} samples\nClass counts: {dict(zip(classes, counts))}')
     
     # Generate a random permutation of all sample indices
     perm = rng.permutation(len(y))
