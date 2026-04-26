@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from module.head import FullyConnected
+from module.head import FullyConnected, MultiHead
 from network.base_network import BaseNetwork
 from util.config import load_config
 
@@ -62,7 +62,19 @@ class TwoDCNN(BaseNetwork):
             'fc1': nn.Linear(features_size0 * features_size1 * filters[1], self.out_features_size),
         })
         # Init the network with a FullyConnected head
-        self.set_head(FullyConnected(in_features=self.out_features_size, num_classes=num_classes))
+        if isinstance(num_classes, int):
+            # Single head for single task
+            self.set_head(FullyConnected(in_features=self.out_features_size, num_classes=num_classes))
+        elif isinstance(num_classes, dict):
+            # Multi-head for multi-task (src and trg) classification
+            self.set_head(
+                MultiHead({
+                    'src': FullyConnected(in_features=self.out_features_size, num_classes=num_classes['src']),
+                    'trg': FullyConnected(in_features=self.out_features_size, num_classes=num_classes['trg']),
+                })
+            )
+        else:
+            raise ValueError('num_classes should be either int or dict')
 
 
     def forward(self, x, return_feat=False):

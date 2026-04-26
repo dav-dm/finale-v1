@@ -25,11 +25,18 @@ class DataManager:
         }
         datasets = dict()
         
-        for dataset_name in self.args.datasets:
+        for i, dataset_name in enumerate(self.args.datasets):
             dataset = get_data_labels(dataset=dataset_name, **dataset_args)
+            
+            # Only apply FSL sampling to the target dataset (i==1) in the transfer learning setting
+            if self.args.is_appr_tl and i == 1:
+                fsl_args_temp = fsl_args
+            else:
+                fsl_args_temp = None
+
             splits = train_val_test_split(
                 dataset=dataset, seed=self.seed, return_quintuple=self.args.return_quintuple,
-                fsl_kwargs=fsl_args if self.args.is_fsl else None
+                fsl_kwargs=fsl_args_temp
             )
             datamodule = DataModule(
                 train_dataset=splits.train[:2], # Do not include quintuples
@@ -37,7 +44,6 @@ class DataManager:
                 test_dataset=splits.test[:2],
                 **vars(self.args)
             )
-            
             datasets[dataset_name] = (splits, datamodule)
             
         return datasets

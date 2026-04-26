@@ -2,6 +2,15 @@ import torch
 import torch.nn as nn
 
 
+class MultiHead(nn.Module):
+    def __init__(self, heads: dict):
+        super().__init__()
+        self.heads = nn.ModuleDict(heads)
+
+    def forward(self, x):
+        return {name: head(x) for name, head in self.heads.items()}
+    
+
 class FullyConnected(nn.Module):
     """
     Fully-connected (linear) head
@@ -12,7 +21,7 @@ class FullyConnected(nn.Module):
     
     def forward(self, x):
         return self.fc(x)
-    
+
 
 class NNHead(nn.Module):
     """

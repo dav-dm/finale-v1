@@ -16,7 +16,10 @@ class TransferLearningTrainer(BaseTrainer):
         (src_dataset_name, (src_splits, src_datamodule)) = items[0]
         (trg_dataset_name, (trg_splits, trg_datamodule)) = items[1]
         
-        self.dict_args['num_classes'] = trg_splits.num_classes
+        self.dict_args['num_classes'] = {
+            'src': src_splits.num_classes,
+            'trg': trg_splits.num_classes
+        }
         
         self.dm.update_log_dir(src_dataset_name)
         self._save_dict_args()
@@ -27,6 +30,7 @@ class TransferLearningTrainer(BaseTrainer):
         # Train and val on src
         approach.datamodule = src_datamodule
         print(f'[Trainer] Starting training on source dataset: {src_dataset_name}')
+        approach.set_task('src')
         approach.fit()
         approach.validate()
         
@@ -38,6 +42,7 @@ class TransferLearningTrainer(BaseTrainer):
         approach = self._reset_approach(checkpoint_path)
         approach.datamodule = trg_datamodule
         print(f'[Trainer] Starting training on target dataset: {trg_dataset_name}')
+        approach.set_task('trg')
         approach.adapt()
         approach.validate()
         
@@ -51,6 +56,7 @@ class TransferLearningTrainer(BaseTrainer):
         # Test on src
         print(f'[Trainer] Starting test on source dataset: {src_dataset_name}')
         approach.datamodule.set_test_dataset(src_splits.test)
+        approach.set_task('src')
         approach.test()
         
         

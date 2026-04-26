@@ -45,7 +45,7 @@ sgd_params:
   nesterov: True
 max_epochs: 100
 min_epochs: 1
-adapt_strat: 'scratch' 
+adapt_strat: 'finetuning' 
 adapt_lr: 0.0001
 adapt_epochs: 100
 
@@ -91,6 +91,12 @@ gamma: 0.5
 is_distill:
 kd_t: 1
 teacher_path:
+
+# NEGATIVE MARGIN
+nm_margin: -0.3
+nm_inner_margin: 0.0
+nm_temp: 30.0
+nm_inner_temp: 5.0
 
 # RANDOM FOREST
 rf_criterion: 'gini'

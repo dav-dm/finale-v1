@@ -11,7 +11,10 @@ from network.network_factory import build_network
 
 disable_tqdm = not sys.stdout.isatty()
 dl_approaches = {
+    'scratch' : 'Scratch',
     'baseline' : 'Baseline',
+    'baseline_pp' : 'BaselinePP',
+    'negative_margin' : 'NegativeMargin',
     'rfs' : 'RFS',
 }
 
