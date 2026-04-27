@@ -17,7 +17,8 @@ class NegativeMarginLayer(nn.Module):
         nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
 
     def forward(self, feature, label=None):
-        cosine = F.linear(F.normalize(feature), F.normalize(self.weight))
+        device = feature.device
+        cosine = F.linear(F.normalize(feature), F.normalize(self.weight.to(device)))
         # when test, no label, just return
         if label is None:
             return cosine * self.temperature

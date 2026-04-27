@@ -29,7 +29,7 @@ class DataManager:
             dataset = get_data_labels(dataset=dataset_name, **dataset_args)
             
             # Only apply FSL sampling to the target dataset (i==1) in the transfer learning setting
-            if self.args.is_appr_tl and i == 1:
+            if self.args.is_appr_tl and self.args.is_fsl and i == 1:
                 fsl_args_temp = fsl_args
             else:
                 fsl_args_temp = None
