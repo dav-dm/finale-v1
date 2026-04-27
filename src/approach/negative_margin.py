@@ -32,10 +32,10 @@ class NegativeMargin(DLModule):
             MultiHead({
                 'src': NegativeMarginLayer(
                     self.net.out_features_size, self.classes_dict['src'], 
-                    margin=self.margin, temperature=self.temp),
+                    margin=self.margin, temperature=self.temp).to(self.device),
                 'trg': NegativeMarginLayer(
                     self.net.out_features_size, self.classes_dict['trg'],
-                    margin=self.inner_margin, temperature=self.inner_temp),
+                    margin=self.inner_margin, temperature=self.inner_temp).to(self.device),
             })
         )
         

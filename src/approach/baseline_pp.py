@@ -25,8 +25,8 @@ class BaselinePP(DLModule):
         
         self.net.set_head(
             MultiHead({
-                'src': DistLinear(self.net.out_features_size, self.classes_dict['src']),
-                'trg': DistLinear(self.net.out_features_size, self.classes_dict['trg']),
+                'src': DistLinear(self.net.out_features_size, self.classes_dict['src']).to(self.device),
+                'trg': DistLinear(self.net.out_features_size, self.classes_dict['trg']).to(self.device),
             })
         )
     
