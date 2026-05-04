@@ -4,7 +4,7 @@ from approach.approach_factory import get_approach
 from trainer.base_trainer import BaseTrainer
 
 
-class TransferLearningTrainer(BaseTrainer):
+class FewShotLearningTrainer(BaseTrainer):
     """
     Trainer for transfer learning.
     It first trains on the source dataset, then adapts to the target dataset.

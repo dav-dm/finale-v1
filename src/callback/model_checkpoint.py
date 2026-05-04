@@ -74,3 +74,13 @@ class ModelCheckpoint(Callback):
         At the start of testing, loads the checkpoint if it exists.
         """
         self._load_checkpoint(module, phase='testing')
+
+    def on_adaptation_start(self, module):
+        """
+        Clean up the checkpoint path at the start of adaptation.
+        """
+        self.ckpt_path = None
+        dm = DirectoryManager()
+        path = dm.mkdir('checkpoint')
+        for file in Path(path).glob(f'{self.checkpoint_filename}_*.pt'):
+            file.unlink(missing_ok=True)

@@ -4,21 +4,6 @@ from torch.utils.data import Sampler
 from functools import partial
 
 
-def meta_collate(batch, num_ways, k_shot):
-    """
-    Collate function for meta-learning episodes. Assumes that the batch is
-    already sampled to contain num_ways * (k_shot + q_query) samples.
-    """
-    xs = torch.stack([b[0] for b in batch])
-    ys = torch.stack([b[1] for b in batch])
-    split = num_ways * k_shot
-    return (xs[:split], ys[:split]), (xs[split:], ys[split:])
-
-def make_meta_collate(num_ways, k_shot):
-    # Factory function to create a collate function with fixed num_ways and k_shot.
-    return partial(meta_collate, num_ways=num_ways, k_shot=k_shot)
-
-
 class EpisodicBatchSampler(Sampler):
     """
     Sampler that yields a single episode batch.
@@ -111,12 +96,12 @@ class MetaEpisodicBatchSampler(Sampler):
         if too_few_for_query:
             raise ValueError(
                 f"Some classes have fewer than q_query={self.q} samples: "
-                f"{too_few_for_query}. Cannot sample query without replacement."
+                f"{too_few_for_query} has {n} samples. Cannot sample query without replacement."
             )
         if no_support_left:
             raise ValueError(
                 f"Some classes have exactly q_query={self.q} samples: "
-                f"{no_support_left}. No samples would remain for support."
+                f"{no_support_left} has {n} samples. No samples would remain for support."
             )
         if support_replacement_classes:
             print(

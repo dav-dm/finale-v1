@@ -72,3 +72,49 @@ class NNHead(nn.Module):
         # idx = torch.argmax(soft_values, dim=1)
         # y_pred = classes[idx] 
         return logits
+
+
+class MatchingHead(nn.Module):
+    """
+    Attention-based Matching Networks head.
+    """
+    def __init__(self, normalize=True, eps=1e-8):
+        super().__init__()
+        self.normalize = normalize
+        self.eps = eps
+
+        self.register_buffer("support", None, persistent=False)
+        self.register_buffer("support_y", None, persistent=False)
+
+    def fit(self, x, y):
+        if self.normalize:
+            x = nn.functional.normalize(x, p=2, dim=1)
+
+        self.support = x
+        self.support_y = y
+
+    def forward(self, x):
+        if self.support is None or self.support_y is None:
+            return torch.empty((x.size(0), 0), device=x.device)
+
+        if self.normalize:
+            x = nn.functional.normalize(x, p=2, dim=1)
+
+        # Similarity query-support: [num_query, num_support]
+        scores = x @ self.support.T
+
+        # Attention over support samples
+        attn = torch.softmax(scores, dim=1)
+
+        num_classes = int(self.support_y.max().item()) + 1
+
+        # One-hot encode support labels: [num_support, num_classes]
+        one_hot = nn.functional.one_hot(
+            self.support_y,
+            num_classes=num_classes,
+        ).to(dtype=attn.dtype)
+
+        # Class probabilities: [num_query, num_classes]
+        probs = attn @ one_hot
+
+        return torch.log(probs.clamp_min(self.eps))

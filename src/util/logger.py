@@ -80,6 +80,57 @@ class Logger:
         plt.savefig(path / f'confusion_matrix_{folder_name}.pdf', bbox_inches='tight')
         plt.close()
 
+    def _save_aggregated_report(self, episode_metrics, path):
+        """
+        Save mean ± std of scalar metrics across episodes.
+        """
+        path.mkdir(parents=True, exist_ok=True)
+        scalar_keys = [k for k in episode_metrics[0] if k != 'classification_report']
+        n = len(episode_metrics)
+
+        report_path = path / 'report_test_aggregated.txt'
+        with report_path.open('w') as f:
+            f.write(f'Aggregated Metrics Report ({n} episodes)\n')
+            f.write('=========================\n')
+            for key in scalar_keys:
+                vals = [m[key] for m in episode_metrics]
+                f.write(f'{key}: {np.mean(vals):.4f} ± {np.std(vals):.4f}\n')
+
+            f.write('\n--- Per-episode breakdown ---\n')
+            for i, m in enumerate(episode_metrics):
+                f.write(f'\nEpisode {i}:\n')
+                for key in scalar_keys:
+                    f.write(f'  {key}: {m[key]:.4f}\n')
+
+        print(f'Aggregated report saved => {report_path}')
+
+
+    def _generate_mean_confusion_matrix(self, episode_cms, path, dataset_name):
+        """
+        Generate and save a mean normalized confusion matrix across episodes.
+        """
+        path.mkdir(parents=True, exist_ok=True)
+
+        mean_cm = np.mean(np.stack(episode_cms), axis=0)
+        np.savetxt(path / 'confusion_matrix_test_mean.csv', mean_cm, delimiter=',', fmt='%.4f')
+
+        dc = dataset_config[dataset_name]
+        label_column = dc.get('label_column', 'label').lower()
+        label_conv_path = Path(dc['path']).parent / f'{label_column}_conv.json'
+        with label_conv_path.open('r') as f:
+            label_conv = json.load(f)
+
+        classes = label_conv.keys()
+        n_classes = len(classes)
+
+        plt.figure(figsize=(max(6, n_classes * 0.8), max(4, n_classes * 0.6)))
+        sns.heatmap(mean_cm, annot=True, fmt='.2f', xticklabels=classes, yticklabels=classes, cmap='viridis')
+        plt.ylabel('True label')
+        plt.xlabel('Predicted label')
+        plt.title(f'Mean Normalized Confusion Matrix ({len(episode_cms)} episodes)')
+        plt.savefig(path / 'confusion_matrix_test_mean.pdf', bbox_inches='tight')
+        plt.close()
+
     def process_results(self):
         """
         Process results for each dataset used.
@@ -92,6 +143,7 @@ class Logger:
             if not base_path.exists():
                 continue
 
+            # Single episode metrics (train/val/test)
             for phase in ['train', 'val', 'test']:
                 path = base_path / phase
                 if not path.exists():
@@ -104,13 +156,91 @@ class Logger:
                     labels, preds, folder_name=phase, path=base_path / 'detailed', 
                     dataset_name=dataset_name
                 )
+            
+            test_episode_dirs = sorted(
+                (p for p in base_path.glob('test_*') if p.is_dir()),
+                key=lambda p: int(p.name.split('_')[1])
+            )
+            if not test_episode_dirs:
+                continue
+
+            # Multiple episode metrics (test episodes)
+            episode_metrics = []
+            episode_cms = []
+
+            for ep_dir in test_episode_dirs:
+                ep_idx = ep_dir.name
+                labels, preds = self._load_data(ep_dir)
+                metrics = self._compute_metrics(labels, preds)
+                cm = confusion_matrix(labels, preds, normalize='true')
+                episode_metrics.append(metrics)
+                episode_cms.append(cm)
+
+            # Aggregate metrics across episodes (mean ± std)
+            self._save_aggregated_report(episode_metrics, path=base_path / 'detailed')
+            # Mean confusion matrix across episodes
+            self._generate_mean_confusion_matrix(
+                episode_cms, path=base_path / 'detailed', dataset_name=dataset_name
+            )
                 
+    def _split_into_episodes(self, df):
+        """Split dataframe into episodes based on epoch resets."""
+        episodes = []
+        current = []
+        prev_epoch = None
+
+        for _, row in df.iterrows():
+            if prev_epoch is not None and row['epoch'] <= prev_epoch:
+                episodes.append(pd.DataFrame(current).reset_index(drop=True))
+                current = []
+            current.append(row)
+            prev_epoch = row['epoch']
+
+        if current:
+            episodes.append(pd.DataFrame(current).reset_index(drop=True))
+
+        return episodes
 
     def _plot_metric_group(self, df, group_cols, ylabel, path, output_filename):
-        max_epoch = df.shape[0]
-        plt.figure(figsize=(max_epoch * 0.20, 5))
-        for col in group_cols:
-            plt.plot(df['epoch'], df[col], marker='o', label=col)
+        episodes = self._split_into_episodes(df)
+        n_episodes = len(episodes)
+        max_epoch = max(ep['epoch'].max() for ep in episodes)
+
+        plt.figure(figsize=(max_epoch * 0.20 + 2, 5))
+
+        colors = [p['color'] for p in plt.rcParams['axes.prop_cycle']]
+
+        if n_episodes == 1:
+            ep = episodes[0]
+            for i, col in enumerate(group_cols):
+                plt.plot(ep['epoch'], ep[col], marker='o', label=col,
+                        color=colors[i % len(colors)])
+        else:
+            for i, col in enumerate(group_cols):
+                col_color = colors[i % len(colors)]
+
+                # Thin transparent lines for each individual episode
+                for ep in episodes:
+                    plt.plot(ep['epoch'], ep[col],
+                            color=col_color, alpha=0.25, linewidth=1,
+                            marker='o', markersize=2,
+                            label=None)
+
+                # Bold mean line across episodes (only if all have the same length)
+                ep_lengths = [len(ep) for ep in episodes]
+                if len(set(ep_lengths)) == 1:
+                    mean_vals = np.mean(
+                        np.stack([ep[col].values for ep in episodes]), axis=0
+                    )
+                    base_epochs = episodes[0]['epoch'].values
+                    plt.plot(base_epochs, mean_vals,
+                            color=col_color, linewidth=2.5,
+                            marker='o', markersize=4,
+                            label=f'{col} (mean, {n_episodes} ep.)')
+                else:
+                    # Episodes have unequal lengths: skip mean, just add a legend entry
+                    plt.plot([], [], color=col_color, linewidth=2,
+                            label=f'{col} ({n_episodes} ep.)')
 
         plt.xlabel('Epochs')
         plt.ylabel(ylabel)

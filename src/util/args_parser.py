@@ -12,6 +12,7 @@ from approach import (
     NegativeMargin,
     get_approach_type,
     is_approach_transfer_learning,
+    is_approach_meta_learning,
 )
 
 
@@ -56,8 +57,9 @@ def parse_arguments():
     args = parser.parse_args()
     
     args.appr_type = get_approach_type(args.approach) 
-    args.is_appr_tl = is_approach_transfer_learning(args.approach, args.adapt_strat)
-    args.is_fsl = args.is_appr_tl  # FSL active for transfer- and meta-learning
+    args.is_appr_tl = is_approach_transfer_learning(args.approach)
+    args.is_appr_meta = is_approach_meta_learning(args.approach)
+    args.is_fsl = args.is_appr_tl or args.is_appr_meta
 
     if len(args.datasets) == 0:
         raise ValueError('At least one dataset must be specified.')

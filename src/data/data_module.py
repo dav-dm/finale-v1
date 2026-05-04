@@ -2,7 +2,7 @@ import torch
 from argparse import ArgumentParser
 from torch.utils.data import DataLoader, TensorDataset
 
-from data.batch_sampler import EpisodicBatchSampler, MetaEpisodicBatchSampler, make_meta_collate
+from data.batch_sampler import EpisodicBatchSampler, MetaEpisodicBatchSampler
 from util.config import load_config
 
 
@@ -136,7 +136,6 @@ class DataModule:
         return DataLoader(
             dataset,
             batch_sampler=sampler,
-            collate_fn=make_meta_collate(self.num_ways, self.train_k),
             num_workers=self.num_workers,
             pin_memory=self.pin_memory,
         )
