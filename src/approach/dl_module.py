@@ -16,6 +16,7 @@ dl_approaches = {
     'baseline_pp' : 'BaselinePP',
     'negative_margin' : 'NegativeMargin',
     'rfs' : 'RFS',
+    'matching_net' : 'MatchingNet',
 }
 
 
@@ -40,6 +41,8 @@ class DLModule:
         self.lr_strat = kwargs.get('lr_strat', cf['lr_strat'])
         self.optimizer_name = kwargs.get('optimizer', cf['optimizer'])
         self.sch_monitor = kwargs.get('sch_monitor', cf['sch_monitor'])
+
+        self.is_meta = kwargs.get('is_appr_meta', False)
         
         self.max_epochs = kwargs.get('max_epochs', cf['max_epochs'])
         self.min_epochs = kwargs.get('min_epochs', cf['min_epochs'])
@@ -86,9 +89,13 @@ class DLModule:
 
         for cb in self.callbacks: 
             cb.on_fit_start(self)
-            
-        train_dataloader = self.datamodule.get_train_data()
-        val_dataloader = self.datamodule.get_val_data()
+
+        if self.is_meta:
+            train_dataloader = self.datamodule.get_meta_episode_data('train')
+            val_dataloader = self.datamodule.get_meta_episode_data('val')
+        else:
+            train_dataloader = self.datamodule.get_train_data()
+            val_dataloader = self.datamodule.get_val_data()
         self._fit(train_dataloader, val_dataloader)
 
         for cb in self.callbacks:
@@ -99,8 +106,11 @@ class DLModule:
         
         for cb in self.callbacks:
             cb.on_test_start(self)
-            
-        test_dataloader = self.datamodule.get_test_data()
+
+        if self.is_meta and self.task == 'src':
+            test_dataloader = self.datamodule.get_meta_episode_data('test')
+        else:    
+            test_dataloader = self.datamodule.get_test_data()
         self.outputs = self._predict(test_dataloader)
         
         for cb in self.callbacks:
@@ -112,7 +122,10 @@ class DLModule:
         for cb in self.callbacks:
             cb.on_validation_start(self)
             
-        val_dataloader = self.datamodule.get_val_data()
+        if self.is_meta:
+            val_dataloader = self.datamodule.get_meta_episode_data('val')
+        else:
+            val_dataloader = self.datamodule.get_val_data()
         self.outputs = self._predict(val_dataloader)
         
         for cb in self.callbacks:
@@ -121,6 +134,7 @@ class DLModule:
     def adapt(self, episode_idx):
         # Adaptation phase carried out by transfer learning approaches
         self.phase = f'adapt_{episode_idx}'
+        self.current_episode = episode_idx
 
         for cb in self.callbacks: 
             cb.on_adaptation_start(self)
@@ -164,7 +178,13 @@ class DLModule:
                 batch_x, batch_y = batch_x.to(self.device), batch_y.to(self.device)
             
                 # Forward pass and Loss
-                loss, logits = self._fit_step(batch_x, batch_y.long())
+                step_out = self._fit_step(batch_x, batch_y.long())
+
+                if len(step_out) == 2:
+                    loss, logits = step_out
+                    target_y = batch_y.long()
+                else:
+                    loss, logits, target_y = step_out
 
                 # Backward pass
                 self.optimizer.zero_grad()
@@ -174,7 +194,7 @@ class DLModule:
 
                 # Metrics
                 preds = torch.argmax(logits, dim=1)
-                all_labels.append(batch_y)
+                all_labels.append(target_y)
                 all_preds.append(preds)
                 
             # Validation on fit epoch end
@@ -217,12 +237,18 @@ class DLModule:
             for batch_x, batch_y in predict_loop:
                 batch_x, batch_y = batch_x.to(self.device), batch_y.to(self.device)
                 
-                loss, logits = self._predict_step(batch_x, batch_y.long())
+                step_out = self._predict_step(batch_x, batch_y.long())
+
+                if len(step_out) == 2:
+                    loss, logits = step_out
+                    target_y = batch_y.long()
+                else:
+                    loss, logits, target_y = step_out
             
                 preds = torch.argmax(logits, dim=1)
-                running_loss += loss.item() * batch_y.shape[0]
+                running_loss += loss.item() * target_y.shape[0]
                 
-                all_labels.append(batch_y)
+                all_labels.append(target_y)
                 all_preds.append(preds)
                 all_logits.append(logits)
                 
@@ -342,9 +368,52 @@ class DLModule:
         }, self.checkpoint_path)
         return self.checkpoint_path
     
-    def get_net_state_dict(self):
-        return self.net.state_dict()
+    # -----------------
+    # UTILITY FUNCTIONS
+    # -----------------
+
+    def split_episode_batch(self, batch_x, batch_y):
+        """
+        Splits a classic episodic batch into support and query sets.
+
+        Assumes the batch is ordered as:
+        [support samples..., query samples...]
+        """
+        split = self.num_ways * self.train_k
+
+        support_x = batch_x[:split]
+        support_y = batch_y[:split]
+
+        query_x = batch_x[split:]
+        query_y = batch_y[split:]
+
+        return (support_x, support_y), (query_x, query_y)
     
-    def set_net_state_dict(self, state_dict):
-        self.net.load_state_dict(state_dict)
-        
+    def local_logits_to_global_logits(self, local_logits, episode_classes):
+        """
+        Converts local episodic logits into global-class logits.
+        """
+        global_logits = torch.full(
+            size=(local_logits.size(0), self.num_classes),
+            fill_value=-1e9,
+            device=self.device,
+            dtype=local_logits.dtype,
+        )
+        global_logits[:, episode_classes] = local_logits
+        return global_logits
+    
+    def global_labels_to_local_labels(self, global_y):
+        """
+        Converts global-class labels into local episodic labels based on the support set classes.
+        """
+        episode_classes = torch.unique(global_y, sorted=True)
+
+        class_to_local = {
+            cls.item(): i for i, cls in enumerate(episode_classes)
+        }
+        local_y = torch.tensor(
+            [class_to_local[label.item()] for label in global_y],
+            device=self.device,
+            dtype=torch.long,
+        )
+        return episode_classes.long().to(self.device), local_y
