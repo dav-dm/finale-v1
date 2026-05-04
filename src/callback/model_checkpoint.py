@@ -52,11 +52,13 @@ class ModelCheckpoint(Callback):
             
     def _load_checkpoint(self, module, phase):
         if self.ckpt_path is None:
-            print(f'[ModelCheckpoint] Checkpoint path is None, using current state.')
+            if module.verbose:
+                print(f'[ModelCheckpoint] Checkpoint path is None, using current state.')
             return
         
         if Path(self.ckpt_path).exists():
-            print(f"[ModelCheckpoint] Loading checkpoint from {self.ckpt_path} for {phase}.")
+            if module.verbose:
+                print(f"[ModelCheckpoint] Loading checkpoint from {self.ckpt_path} for {phase}.")
             module.load_checkpoint(self.ckpt_path)
         else:
             raise FileNotFoundError(f'Checkpoint file not found at {self.ckpt_path}')

@@ -94,8 +94,8 @@ class DLModule:
         for cb in self.callbacks:
             cb.on_fit_end(self)
         
-    def test(self):
-        self.phase = 'test'
+    def test(self, episode_idx=None):
+        self.phase = 'test' if episode_idx is None else f'test_{episode_idx}'
         
         for cb in self.callbacks:
             cb.on_test_start(self)
@@ -106,8 +106,8 @@ class DLModule:
         for cb in self.callbacks:
             cb.on_test_end(self)
         
-    def validate(self):
-        self.phase = 'val'
+    def validate(self, episode_idx=None):
+        self.phase = 'val' if episode_idx is None else f'val_{episode_idx}'
         
         for cb in self.callbacks:
             cb.on_validation_start(self)
@@ -118,14 +118,14 @@ class DLModule:
         for cb in self.callbacks:
             cb.on_validation_end(self)  
             
-    def adapt(self):
+    def adapt(self, episode_idx):
         # Adaptation phase carried out by transfer learning approaches
-        self.phase = 'train'
+        self.phase = f'adapt_{episode_idx}'
 
         for cb in self.callbacks: 
             cb.on_adaptation_start(self)
             
-        adapt_dataloader = self.datamodule.get_adapt_data() 
+        adapt_dataloader = self.datamodule.get_episode_data(episode_idx)
         val_dataloader = self.datamodule.get_val_data()
         self._adapt(adapt_dataloader, val_dataloader)
 
@@ -158,7 +158,7 @@ class DLModule:
             train_loop = tqdm(
                 train_dataloader, desc=f'Ep[{epoch+1}/{self.max_epochs}]',  
                 postfix=postfix, leave=False, disable=disable_tqdm
-            )
+            ) if self.verbose else train_dataloader
             for batch_x, batch_y in train_loop:
                 # Move data on self.device
                 batch_x, batch_y = batch_x.to(self.device), batch_y.to(self.device)
@@ -213,7 +213,7 @@ class DLModule:
             
             predict_loop = tqdm(
                 dataloader, desc=desc, leave=not self.phase=='train', disable=disable_tqdm
-            )
+            ) if self.verbose else dataloader
             for batch_x, batch_y in predict_loop:
                 batch_x, batch_y = batch_x.to(self.device), batch_y.to(self.device)
                 
