@@ -1,3 +1,5 @@
+from tqdm import tqdm
+
 from approach.approach_factory import get_approach
 from trainer.base_trainer import BaseTrainer
 
@@ -20,6 +22,8 @@ class TransferLearningTrainer(BaseTrainer):
             'src': src_splits.num_classes,
             'trg': trg_splits.num_classes
         }
+        self.dict_args['src_dataset'] = src_dataset_name
+        self.dict_args['trg_dataset'] = trg_dataset_name
         
         self.dm.update_log_dir(src_dataset_name)
         self._save_dict_args()
@@ -27,44 +31,39 @@ class TransferLearningTrainer(BaseTrainer):
         approach = get_approach(approach_name=self.args.approach, **self.dict_args)
         print('='*100)
         
-        # Train and val on src
+        # Train, val, and test on src
         approach.datamodule = src_datamodule
         print(f'[Trainer] Starting training on source dataset: {src_dataset_name}')
         approach.set_task('src')
         approach.fit()
         approach.validate()
+        approach.test()
         
         checkpoint_path = self.args.ckpt_path or approach.checkpoint_path
         
         self.dm.update_log_dir(trg_dataset_name) # Switch the log_dir to trg
         
-        # Adaptation to trg
-        approach = self._reset_approach(checkpoint_path)
-        approach.datamodule = trg_datamodule
-        print(f'[Trainer] Starting training on target dataset: {trg_dataset_name}')
-        approach.set_task('trg')
-        approach.adapt()
-        approach.validate()
-        
-        # Test on trg
-        print(f'[Trainer] Starting test on target dataset: {trg_dataset_name}')
-        approach.datamodule.set_test_dataset(trg_splits.test)
-        approach.test()
-        
-        self.dm.update_log_dir(src_dataset_name) # Switch the log_dir to src
-        
-        # Test on src
-        print(f'[Trainer] Starting test on source dataset: {src_dataset_name}')
-        approach.datamodule.set_test_dataset(src_splits.test)
-        approach.set_task('src')
-        approach.test()
-        
-        
+        # Eisodic adaptation to trg
+        print(
+            f'[Trainer] Starting adaptation on target dataset: {trg_dataset_name} '
+            f'for {self.args.num_episodes} episodes'
+        )
+        adapt_loop = tqdm(range(self.args.num_episodes), desc=f'Episodes')
+        for episode_idx in adapt_loop:
+            approach = self._reset_approach(checkpoint_path)
+            approach.datamodule = trg_datamodule
+            approach.set_task('trg')
+
+            approach.adapt(episode_idx)
+            approach.test(episode_idx)
+
+            adapt_loop.set_postfix({'trn f1': f'{approach.outputs["f1_score_macro"]:.4f}'})
+   
     def _reset_approach(self, checkpoint_path):        
-        approach = get_approach(approach_name=self.args.approach, **self.dict_args)
+        approach = get_approach(approach_name=self.args.approach, verbose=False, **self.dict_args)
         # Loads checkpoint from the first task or from checkpoint_path
         approach.load_checkpoint(checkpoint_path) 
-        print(f'[Trainer] Loaded approach state from {checkpoint_path}')
+        # print(f'[Trainer] Loaded approach state from {checkpoint_path}')
         return approach    
             
             
