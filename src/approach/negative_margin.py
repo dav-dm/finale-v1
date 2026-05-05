@@ -1,8 +1,7 @@
 from torch import nn
 
 from approach.dl_module import DLModule
-from module.head import MultiHead
-from module.negative_margin_layer import NegativeMarginLayer
+from module.head import MultiHead, NegativeMarginLayer
 from util.config import load_config
 
 

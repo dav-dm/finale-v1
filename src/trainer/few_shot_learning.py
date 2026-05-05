@@ -48,7 +48,7 @@ class FewShotLearningTrainer(BaseTrainer):
             f'[Trainer] Starting adaptation on target dataset: {trg_dataset_name} '
             f'for {self.args.num_episodes} episodes'
         )
-        adapt_loop = tqdm(range(self.args.num_episodes), desc=f'Episodes')
+        adapt_loop = tqdm(range(self.args.num_episodes), desc=f'[episodes]')
         for episode_idx in adapt_loop:
             approach = self._reset_approach(checkpoint_path)
             approach.datamodule = trg_datamodule

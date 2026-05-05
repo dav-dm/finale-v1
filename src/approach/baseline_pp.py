@@ -1,8 +1,7 @@
 from torch import nn
 
 from approach.dl_module import DLModule
-from module.dist_linear import DistLinear
-from module.head import MultiHead
+from module.head import DistLinear, MultiHead
 from util.config import load_config
 
 

@@ -19,6 +19,7 @@ dl_approaches = {
     'matching_net' : 'MatchingNet',
     'proto_net' : 'ProtoNet',
     'metaoptnet' : 'MetaOptNet',
+    'maml' : 'MAML',
 }
 
 
