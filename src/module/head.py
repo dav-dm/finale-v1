@@ -1,5 +1,7 @@
+import math
 import torch
 import torch.nn as nn
+from torch.nn.utils.parametrizations import weight_norm
 from qpth.qp import QPFunction
 
 
@@ -73,6 +75,73 @@ class NNHead(nn.Module):
         # idx = torch.argmax(soft_values, dim=1)
         # y_pred = classes[idx] 
         return logits
+    
+
+class DistLinear(nn.Module):
+    """
+    From "A Closer Look at Few-shot Classification. ICLR 2019."
+    Implemented from: https://github.com/RL-VIG/LibFewShot
+    """
+    def __init__(self, in_channel, out_channel):
+        super(DistLinear, self).__init__()
+        self.fc = nn.Linear(in_channel, out_channel, bias=False)
+
+        self.class_wise_learnable_norm = True
+        if self.class_wise_learnable_norm:
+            weight_norm(self.fc, name="weight", dim=0)
+
+        self.scale_factor = 2 if out_channel <= 200 else 10
+
+    def forward(self, x):
+        x_norm = torch.norm(x, p=2, dim=1).unsqueeze(1).expand_as(x)
+        x_normalized = x.div(x_norm + 0.00001)
+
+        if not self.class_wise_learnable_norm:
+            fc_norm = (
+                torch.norm(self.fc.weight.data, p=2, dim=1)
+                .unsqueeze(1)
+                .expand_as(self.fc.weight.data)
+            )
+            self.fc.weight.data = self.fc.weight.data.div(fc_norm + 0.00001)
+
+        cos_dist = self.fc(x_normalized)
+        score = self.scale_factor * cos_dist
+
+        return score
+    
+
+class NegativeMarginLayer(nn.Module):
+    """
+    From "Negative Margin Matters: Understanding Margin in Few-shot Classification"
+    Implemented from: https://github.com/RL-VIG/LibFewShot
+    """
+    def __init__(self, in_features, out_features, margin=-0.3, temperature=30.0):
+        super(NegativeMarginLayer, self).__init__()
+        self.margin = margin
+        self.temperature = temperature
+        self.weight = nn.Parameter(torch.FloatTensor(out_features, in_features))
+        nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
+
+    def forward(self, feature, label=None):
+        device = feature.device
+        cosine = nn.functional.linear(
+            nn.functional.normalize(feature), 
+            nn.functional.normalize(self.weight.to(device))
+        )
+        # when test, no label, just return
+        if label is None:
+            return cosine * self.temperature
+
+        phi = cosine - self.margin
+
+        output = torch.where(self.one_hot(label, cosine.shape[1]).bool(), phi, cosine)
+        output *= self.temperature
+        return output
+
+    def one_hot(self, y, num_class):
+        return (
+            torch.zeros((len(y), num_class)).to(y.device).scatter_(1, y.unsqueeze(1), 1)
+        )
 
 
 class MatchingHead(nn.Module):

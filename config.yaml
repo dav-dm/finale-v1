@@ -108,6 +108,11 @@ mon_svm_c_reg: 0.1
 mon_svm_max_iters: 15
 mon_normalize:
 
+# MAML
+maml_adapt_steps: 5
+maml_adapt_lr: 0.1
+maml_first_order: 
+
 # RANDOM FOREST
 rf_criterion: 'gini'
 rf_n_estimators: 100
