@@ -1,4 +1,4 @@
-# Group 7 - Meet in the Middle e Quartier - FSL for IoMT
+# Group 9 - Napoleak - FSL for IIoT
 
 
 
@@ -15,14 +15,14 @@ Already a pro? Just edit this README.md and make it your own. Want to make it ea
 
 ```
 cd existing_repo
-git remote add origin https://gitlab.com/traffic-dieti/dac-projects/dac-2025-26/group-7-meet-in-the-middle-e-quartier-fsl-for-iomt.git
+git remote add origin https://gitlab.com/traffic-dieti/dac-projects/dac-2025-26/group-9-napoleak-fsl-for-iiot.git
 git branch -M main
 git push -uf origin main
 ```
 
 ## Integrate with your tools
 
-* [Set up project integrations](https://gitlab.com/traffic-dieti/dac-projects/dac-2025-26/group-7-meet-in-the-middle-e-quartier-fsl-for-iomt/-/settings/integrations)
+* [Set up project integrations](https://gitlab.com/traffic-dieti/dac-projects/dac-2025-26/group-9-napoleak-fsl-for-iiot/-/settings/integrations)
 
 ## Collaborate with your team
 
