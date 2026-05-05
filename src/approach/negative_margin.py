@@ -38,6 +38,10 @@ class NegativeMargin(DLModule):
                     margin=self.inner_margin, temperature=self.inner_temp).to(self.device),
             })
         )
+        self.net.summarize_module() if self.verbose else None
+        
+        self.configure_optimizers()
+        
         
     @staticmethod
     def add_appr_specific_args(parent_parser):
@@ -68,7 +72,7 @@ class NegativeMargin(DLModule):
     def _adapt(self, adapt_dataloader, val_dataloader):
         # Freeze the backbone
         self.net.freeze_backbone()
-        self.net.trainability_info()
+        # self.net.trainability_info()
         
         # Update hyperparameters for adaptation
         self.max_epochs = self.adapt_epochs

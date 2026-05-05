@@ -29,6 +29,9 @@ class BaselinePP(DLModule):
                 'trg': DistLinear(self.net.out_features_size, self.classes_dict['trg']).to(self.device),
             })
         )
+        self.net.summarize_module() if self.verbose else None
+        
+        self.configure_optimizers()
     
     
     def _fit_step(self, batch_x, batch_y):

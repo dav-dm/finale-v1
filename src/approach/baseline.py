@@ -20,6 +20,10 @@ class Baseline(DLModule):
         self.adapt_strat = kwargs.get('adapt_strat', cf['adapt_strat'])
         self.adapt_lr = kwargs.get('adapt_lr', cf['adapt_lr'])
         self.adapt_epochs = kwargs.get('adapt_epochs', cf['adapt_epochs'])
+
+        self.net.summarize_module() if self.verbose else None
+        
+        self.configure_optimizers()
         
         
     @staticmethod

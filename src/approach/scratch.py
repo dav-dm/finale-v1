@@ -12,6 +12,8 @@ class Scratch(DLModule):
         super().__init__(**kwargs)
         cf = load_config()
         self.criterion = nn.CrossEntropyLoss()
+        self.net.summarize_module() if self.verbose else None
+        self.configure_optimizers()
     
     
     def _fit_step(self, batch_x, batch_y):
