@@ -1,7 +1,6 @@
 import sys
 import torch
 from torch import nn
-from tqdm import tqdm
 
 from approach.dl_module import DLModule
 from module.maml_wrapper import MAMLWrapper

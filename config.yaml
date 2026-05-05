@@ -108,6 +108,9 @@ mon_svm_c_reg: 0.1
 mon_svm_max_iters: 15
 mon_normalize:
 
+# RELATION NET
+rn_hidden_dim: 128
+
 # MAML
 maml_adapt_steps: 5
 maml_adapt_lr: 0.1

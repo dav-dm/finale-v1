@@ -231,6 +231,47 @@ class PrototypicalHead(nn.Module):
             return x @ self.prototypes.T
         
 
+class RelationHead(nn.Module):
+    def __init__(self, emb_dim, hidden_dim=128):
+        super().__init__()
+
+        self.relation_module = nn.Sequential(
+            nn.Linear(emb_dim * 2, hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, 1),
+        )
+        self.register_buffer("prototypes", None, persistent=False)
+        self.register_buffer("proto_classes", None, persistent=False)
+
+    def fit(self, x, y):
+        classes = torch.unique(y, sorted=True)
+        self.proto_classes = classes
+
+        self.prototypes = torch.stack([
+            x[y == cls].mean(dim=0) for cls in classes
+        ])  # [num_ways, emb_dim]
+
+    def forward(self, x):
+        """
+        x: [num_query, emb_dim]
+        returns: [num_query, num_ways]
+        """
+        if self.prototypes is None:
+            return torch.empty((x.size(0), 0), device=x.device)
+
+        q = x.unsqueeze(1)                    # [Q, 1, D]
+        p = self.prototypes.unsqueeze(0)      # [1, W, D]
+
+        q = q.expand(-1, p.size(1), -1)       # [Q, W, D]
+        p = p.expand(q.size(0), -1, -1)       # [Q, W, D]
+
+        pairs = torch.cat([q, p], dim=-1)     # [Q, W, 2D]
+        pairs = pairs.flatten(0, 1)           # [Q * W, 2D]
+
+        scores = self.relation_module(pairs)  # [Q * W, 1]
+        return scores.view(x.size(0), -1)     # [Q, W]
+        
+
 class SVClassifier(nn.Module):
     """
     Differentiable SVM classifier used by MetaOptNet.
