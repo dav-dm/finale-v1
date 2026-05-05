@@ -9,4 +9,5 @@ torch
 torchmetrics
 tqdm
 xgboost
+qpth
 pyarrow

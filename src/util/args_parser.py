@@ -8,8 +8,10 @@ from approach import (
     XGB,
     KNN,
     Baseline,
-    RFS,
     NegativeMargin,
+    RFS,
+    ProtoNet,
+    MetaOptNet,
     get_approach_type,
     is_approach_transfer_learning,
     is_approach_meta_learning,
@@ -28,6 +30,8 @@ def parse_arguments():
     parser = Baseline.add_appr_specific_args(parser)
     parser = NegativeMargin.add_appr_specific_args(parser)
     parser = RFS.add_appr_specific_args(parser)
+    parser = ProtoNet.add_appr_specific_args(parser)
+    parser = MetaOptNet.add_appr_specific_args(parser)
     parser.add_argument('--seed', type=int, default=cf['seed'], help='Seed for reproducibility')
     parser.add_argument('--gpu', action='store_true', default=cf['gpu'], help='Use GPU if available')
     parser.add_argument('--n-thr', type=int, default=cf['n_thr'], help='Number of threads')

@@ -100,6 +100,14 @@ nm_inner_margin: 0.0
 nm_temp: 30.0
 nm_inner_temp: 5.0
 
+# PROTOTYPICAL NET
+pn_distance: 'euclidean'
+
+# METAOPTNET
+mon_svm_c_reg: 0.1
+mon_svm_max_iters: 15
+mon_normalize:
+
 # RANDOM FOREST
 rf_criterion: 'gini'
 rf_n_estimators: 100

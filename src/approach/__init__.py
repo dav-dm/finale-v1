@@ -5,6 +5,8 @@ from .scratch import Scratch
 from .baseline import Baseline
 from .baseline_pp import BaselinePP
 from .negative_margin import NegativeMargin
+from .proto_net import ProtoNet
+from .metaoptnet import MetaOptNet
 from .rfs import RFS
 from .xgb import XGB
 from .knn import KNN

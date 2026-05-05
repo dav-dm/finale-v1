@@ -20,7 +20,7 @@ class NegativeMargin(DLModule):
         self.task = 'src'
         self.classes_dict = self.num_classes
         
-        self.criterion = nn.CrossEntropyLoss()
+        self.ce_loss = nn.CrossEntropyLoss()
         self.margin = kwargs.get('nm_margin', cf['nm_margin'])
         self.inner_margin = kwargs.get('nm_inner_margin', cf['nm_inner_margin'])
         self.temp = kwargs.get('nm_temp', cf['nm_temp'])
@@ -57,7 +57,7 @@ class NegativeMargin(DLModule):
     def _fit_step(self, batch_x, batch_y):
         _, batch_emb = self.net(batch_x, return_feat=True)
         logits = self.net.head.heads[self.task](batch_emb, batch_y)
-        loss = self.criterion(logits, batch_y)
+        loss = self.ce_loss(logits, batch_y)
         return loss, logits
     
     
@@ -65,7 +65,7 @@ class NegativeMargin(DLModule):
         # NegativeMarginLayer does not use label during inference, 
         # so we can directly call self.net(batch_x)[self.task]
         logits = self.net(batch_x)[self.task]
-        loss = self.criterion(logits, batch_y) 
+        loss = self.ce_loss(logits, batch_y) 
         return loss, logits
     
     
