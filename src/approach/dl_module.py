@@ -20,6 +20,7 @@ dl_approaches = {
     'proto_net' : 'ProtoNet',
     'metaoptnet' : 'MetaOptNet',
     'maml' : 'MAML',
+    'relation_net' : 'RelationNet',
 }
 
 

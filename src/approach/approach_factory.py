@@ -22,7 +22,7 @@ def is_approach_transfer_learning(approach_name):
     return approach_name in ['rfs', 'baseline', 'baseline_pp', 'negative_margin']
 
 def is_approach_meta_learning(approach_name):
-    return approach_name in ['matching_net', 'proto_net', 'metaoptnet', 'maml']
+    return approach_name in ['matching_net', 'proto_net', 'metaoptnet', 'maml', 'relation_net']
 
 def get_approach(approach_name, datamodule=None, **kwargs):
     callbacks = [SaveOutputs(), TimeMeasurement()] # Base callbacks for both ML and DL approaches
