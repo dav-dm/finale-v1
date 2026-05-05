@@ -6,7 +6,6 @@ networks = {
     '2dcnn' : 'TwoDCNN',
     'transformer' : 'BiflowTransformer',
     'gru' : 'GRU',
-    'unet' : 'UNet',
 }
 
 
