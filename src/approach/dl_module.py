@@ -17,6 +17,8 @@ dl_approaches = {
     'negative_margin' : 'NegativeMargin',
     'rfs' : 'RFS',
     'matching_net' : 'MatchingNet',
+    'proto_net' : 'ProtoNet',
+    'metaoptnet' : 'MetaOptNet',
 }
 
 

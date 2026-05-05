@@ -16,7 +16,7 @@ class Baseline(DLModule):
         self.task = 'src'
         self.classes_dict = self.num_classes
         
-        self.criterion = nn.CrossEntropyLoss()
+        self.ce_loss = nn.CrossEntropyLoss()
         self.adapt_strat = kwargs.get('adapt_strat', cf['adapt_strat'])
         self.adapt_lr = kwargs.get('adapt_lr', cf['adapt_lr'])
         self.adapt_epochs = kwargs.get('adapt_epochs', cf['adapt_epochs'])
@@ -39,13 +39,13 @@ class Baseline(DLModule):
     
     def _fit_step(self, batch_x, batch_y):
         logits = self.net(batch_x)[self.task]
-        loss = self.criterion(logits, batch_y)
+        loss = self.ce_loss(logits, batch_y)
         return loss, logits
                 
             
     def _predict_step(self, batch_x, batch_y):
         logits = self.net(batch_x)[self.task]
-        loss = self.criterion(logits, batch_y)
+        loss = self.ce_loss(logits, batch_y)
         return loss, logits
     
         
