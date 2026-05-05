@@ -30,6 +30,10 @@ class MatchingNet(DLModule):
             MatchingHead().to(self.device)
         )
 
+        self.net.summarize_module() if self.verbose else None
+
+        self.configure_optimizers()
+
     
     def _fit_step(self, batch_x, batch_y):
         return self._meta_learn(batch_x, batch_y)

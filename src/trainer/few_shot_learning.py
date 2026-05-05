@@ -43,7 +43,7 @@ class FewShotLearningTrainer(BaseTrainer):
         
         self.dm.update_log_dir(trg_dataset_name) # Switch the log_dir to trg
         
-        # Eisodic adaptation to trg
+        # Episodic adaptation to trg
         print(
             f'[Trainer] Starting adaptation on target dataset: {trg_dataset_name} '
             f'for {self.args.num_episodes} episodes'

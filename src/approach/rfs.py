@@ -42,6 +42,9 @@ class RFS(DLModule):
             teacher_path=self.teacher_path
         )
         self.nn_head = None
+        self.net.summarize_module() if self.verbose else None
+        
+        self.configure_optimizers()
 
         
     @staticmethod

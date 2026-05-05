@@ -32,7 +32,6 @@ class DLModule:
         print(f'Using device: {self.device}') if self.verbose else None
         
         self.net = build_network(**kwargs).to(self.device)
-        self.net.summarize_module() if self.verbose else None
         
         self.datamodule = datamodule
         self.num_classes = kwargs.get('num_classes', cf['num_classes'])
@@ -52,10 +51,8 @@ class DLModule:
         self.checkpoint_path = None
         
         self.callbacks = callbacks if callbacks is not None else []
-        
-        self.configure_optimizers()
-        
-        
+
+
     @staticmethod
     def get_approach(appr_name, **kwargs):
         Approach = getattr(importlib.import_module(
@@ -91,7 +88,7 @@ class DLModule:
             cb.on_fit_start(self)
 
         if self.is_meta:
-            train_dataloader = self.datamodule.get_meta_episode_data('train')
+            train_dataloader = None  # Rebuilt each epoch inside _fit
             val_dataloader = self.datamodule.get_meta_episode_data('val')
         else:
             train_dataloader = self.datamodule.get_train_data()
@@ -132,7 +129,7 @@ class DLModule:
             cb.on_validation_end(self)  
             
     def adapt(self, episode_idx):
-        # Adaptation phase carried out by transfer learning approaches
+        # Adaptation phase carried out by few-shot learning approaches
         self.phase = f'adapt_{episode_idx}'
         self.current_episode = episode_idx
 
@@ -159,6 +156,9 @@ class DLModule:
 
             for cb in self.callbacks:
                 cb.on_epoch_start(self, epoch)
+
+            if self.is_meta:
+                train_dataloader = self.datamodule.get_meta_episode_data('train', epoch=epoch)
 
             running_loss = 0.0
             all_labels, all_preds = [], []

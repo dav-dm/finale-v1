@@ -115,7 +115,7 @@ class DataModule:
             pin_memory=self.pin_memory,
         )
 
-    def get_meta_episode_data(self, partition):
+    def get_meta_episode_data(self, partition, epoch=0):
         """
         Meta-learning episodes for meta-training, -validation, and -testing on source.
         """
@@ -127,7 +127,7 @@ class DataModule:
             num_ways=self.num_ways,
             k_shot=self.train_k,
             q_query=self.train_q,
-            seed=self.seed,
+            seed=self.seed + epoch * self.num_episodes, # Different episodes each epoch
         )
         dataset = TensorDataset(
             torch.from_numpy(x).float(),
