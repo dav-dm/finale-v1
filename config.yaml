@@ -81,9 +81,11 @@ net_scale: 1
 num_classes: 0
 
 # FEW-SHOT LEARNING
-is_fsl:
-k_seed: 0
-test_k:
+num_episodes: 100
+k: 5
+train_k: 5
+train_q: 5
+num_ways: 3
 
 # RFS
 alpha: 0.5

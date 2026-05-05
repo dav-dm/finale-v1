@@ -9,4 +9,6 @@ from .rfs import RFS
 from .xgb import XGB
 from .knn import KNN
 
-from .approach_factory import get_approach, get_approach_type, is_approach_transfer_learning
+from .approach_factory import (
+    get_approach, get_approach_type, is_approach_transfer_learning, is_approach_meta_learning
+)

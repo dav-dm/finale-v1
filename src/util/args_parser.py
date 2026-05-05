@@ -12,6 +12,7 @@ from approach import (
     NegativeMargin,
     get_approach_type,
     is_approach_transfer_learning,
+    is_approach_meta_learning,
 )
 
 
@@ -52,21 +53,21 @@ def parse_arguments():
                         choices=['PL', 'IAT', 'DIR', 'WIN', 'FLG', 'TTL'],
                         help='Field or fields used (default=%(default)s)', 
                         nargs='+', metavar='FIELD')
-    # FSL args
-    parser.add_argument('--is-fsl', action='store_true', default=cf['is_fsl'], help='FSL mode')
-    parser.add_argument('--k-seed', type=int, default=cf['k_seed'], 
-                        help='Seed used to sample the k samples in the few-shot case.')
-    parser.add_argument('--test-k', type=int, default=cf['test_k'], 
-                        help='Number of shots for meta-testing/adaptation')
     
     args = parser.parse_args()
     
     args.appr_type = get_approach_type(args.approach) 
-    args.is_appr_tl = is_approach_transfer_learning(args.approach, args.adapt_strat)
+    args.is_appr_tl = is_approach_transfer_learning(args.approach)
+    args.is_appr_meta = is_approach_meta_learning(args.approach)
+    args.is_fsl = args.is_appr_tl or args.is_appr_meta
+
+    if len(args.datasets) == 0:
+        raise ValueError('At least one dataset must be specified.')
     
-    if args.is_appr_tl and args.appr_type != "dl":
+    if args.is_fsl and len(args.datasets) != 2:
         raise ValueError(
-            'Transfer Learning is only supported for Deep Learning approaches.'
+            'FSL approaches require exactly 2 datasets '
+            '(non-few source + few target).'
         )
         
     if args.skip_t1 and args.is_appr_tl:

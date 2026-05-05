@@ -1,6 +1,5 @@
 import sys
 import torch
-import numpy as np
 from torch import nn
 from tqdm import tqdm
 
@@ -85,16 +84,17 @@ class RFS(DLModule):
     def _adapt(self, adapt_dataloader, val_dataloader, **kwargs):
         # RFS freezes the backbone during the adaptation phase  
         self.net.freeze_backbone()  
-        self.net.trainability_info()
+        # self.net.trainability_info()
         self.net.eval()
         
         embeddings, labels = [], []
         
         adapt_loop = tqdm(
             adapt_dataloader, desc='[fitting NN head]', leave=True, disable=disable_tqdm
-        )
+        ) if self.verbose else adapt_dataloader
         for batch_x, batch_y in adapt_loop:
-            batch_x, batch_y = batch_x.to(self.device), batch_y.to(self.device)
+            batch_x = batch_x.to(self.device)
+            batch_y = batch_y.to(self.device).long()
             
             # Embed the input
             _, batch_emb = self.net(batch_x, return_feat=True)

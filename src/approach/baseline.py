@@ -49,7 +49,7 @@ class Baseline(DLModule):
         if self.adapt_strat == 'freezing':
             # Freeze the backbone
             self.net.freeze_backbone()
-            self.net.trainability_info()
+            # self.net.trainability_info()
         
         # Update hyperparameters for adaptation
         self.max_epochs = self.adapt_epochs
