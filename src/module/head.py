@@ -237,8 +237,10 @@ class RelationHead(nn.Module):
 
         self.relation_module = nn.Sequential(
             nn.Linear(emb_dim * 2, hidden_dim),
+            nn.LayerNorm(hidden_dim),
             nn.ReLU(inplace=True),
             nn.Linear(hidden_dim, 1),
+            nn.Sigmoid(), 
         )
         self.register_buffer("prototypes", None, persistent=False)
         self.register_buffer("proto_classes", None, persistent=False)
