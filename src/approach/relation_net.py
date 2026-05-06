@@ -22,7 +22,7 @@ class RelationNet(DLModule):
         self.task = 'src'
         self.classes_dict = self.num_classes
 
-        self.ce_loss = nn.CrossEntropyLoss()
+        self.mse_loss = nn.MSELoss()
         self.num_ways = kwargs.get('num_ways', cf['num_ways'])
         self.train_k = kwargs.get('train_k', cf['train_k'])
 
@@ -52,10 +52,13 @@ class RelationNet(DLModule):
     
     def _predict_step(self, batch_x, batch_y):
         if self.task == 'src':
-             return self._meta_learn(batch_x, batch_y)
+            return self._meta_learn(batch_x, batch_y)
         else:
-            logits = self.net(batch_x)
-            loss = self.ce_loss(logits, batch_y)
+            logits = self.net(batch_x)  # [B, num_target_classes], sigmoid scores
+            one_hot = torch.zeros_like(logits).scatter_(
+                1, batch_y.unsqueeze(1), 1.0   # [B, num_target_classes]
+            )
+            loss = self.mse_loss(logits, one_hot)
             return loss, logits
         
 
@@ -81,13 +84,18 @@ class RelationNet(DLModule):
 
         # Predict query labels
         local_logits = self.net.head(emb_query)
+
+        _, query_y_local = self.global_labels_to_local_labels(global_y=query_y)
+        one_hot = torch.zeros_like(local_logits).scatter_(
+            1, query_y_local.unsqueeze(1), 1.0
+        )
+        loss = self.mse_loss(local_logits, one_hot)
+
         global_logits = self.local_logits_to_global_logits(
             local_logits=local_logits,
             episode_classes=episode_classes,
         )
-        loss = self.ce_loss(global_logits, query_y)
         return loss, global_logits, query_y
-    
 
     @torch.no_grad()
     def _adapt(self, adapt_dataloader, val_dataloader, **kwargs):

@@ -282,5 +282,6 @@ $RECYCLE.BIN/
 
 # USER FOLDERS
 result*/
+log_dump/
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,macos,windows,linux,python,jupyternotebooks

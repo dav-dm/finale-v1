@@ -16,7 +16,6 @@ class DataModule:
         self.num_workers = kwargs.get('num_workers', cf['num_workers'])
         self.pin_memory = kwargs.get('pin_memory', cf['pin_memory'])
 
-        is_fsl =  kwargs.get('is_fsl', False)
         self.approach_type = kwargs.get('appr_type', None)
         self.seed = kwargs.get('seed', cf['seed'])
 

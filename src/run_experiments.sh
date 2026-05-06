@@ -4,7 +4,6 @@
 # It accepts the following parameters:
 #   --datasets (-d)     : space-separated list of datasets
 #   --seed (-s)         : comma-separated list of seeds or an interval (e.g., 0-100)
-#   --k-seed (-ks)      : comma-separated list of k-seeds or an interval (e.g., 0-100) [optional]
 #   --approach (-a)     : comma-separated list of approaches
 #   --is-flat (-f)      : flag indicating flat structure (if present, add to command)
 #   --cpu (-c)          : integer number of cores to use
@@ -21,7 +20,6 @@ usage() {
 # Default values
 DATASETS=""
 SEEDS=""
-K_SEEDS=""
 APPROACHES=""
 IS_FLAT=0
 CPU_CORES=""
@@ -37,10 +35,6 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         -s|--seed)
             SEEDS="$2"
-            shift
-            ;;
-        -ks|--k-seed)
-            K_SEEDS="$2"
             shift
             ;;
         -a|--approach)
@@ -97,19 +91,6 @@ else
     IFS=',' read -ra SEED_ARR <<< "$SEEDS"
 fi
 
-# Process the --k-seed parameter (optional)
-if [[ -n "$K_SEEDS" ]]; then
-    K_SEED_ARR=()
-    if [[ "$K_SEEDS" =~ ^[0-9]+-[0-9]+$ ]]; then
-        IFS='-' read -r kstart kend <<< "$K_SEEDS"
-        for ((k=kstart; k<=kend; k++)); do
-            K_SEED_ARR+=("$k")
-        done
-    else
-        IFS=',' read -ra K_SEED_ARR <<< "$K_SEEDS"
-    fi
-fi
-
 # Split datasets into array
 read -ra DATASET_ARR <<< "$DATASETS"
 # Create a unique tag for the dataset combination
@@ -138,45 +119,20 @@ for approach in "${APPROACH_ARR[@]}"; do
     mkdir -p "${LOG_DIR}"
 
     for seed in "${SEED_ARR[@]}"; do
+        CMD="python main.py --datasets ${DATASETS} --approach ${approach} --seed ${seed} --log-dir ${LOG_DIR}${FLAT_FLAG}"
+        CMD+=" ${EXTRA_ARGS}"
 
-        # If --k-seed is provided, run an additional loop
-        if [[ -n "$K_SEEDS" ]]; then
-
-            for kseed in "${K_SEED_ARR[@]}"; do
-
-                CMD="python main.py --datasets ${DATASETS} --approach ${approach} --seed ${seed} --k-seed ${kseed} --log-dir ${LOG_DIR}${FLAT_FLAG}"
-                CMD+=" ${EXTRA_ARGS}"
-
-                if [[ -n "$GPU_ID" ]]; then
-                    CMD="CUDA_VISIBLE_DEVICES=${GPU_ID} ${CMD}"
-                fi
-
-                FULL_CMD="{ echo \"$(printf '=%.0s' {1..100})\" ; \
-                    echo \"Command: ${CMD}\" ; \
-                    echo \"$(printf '=%.0s' {1..100})\" >&2 ; \
-                    echo \"Command: ${CMD}\" >&2 ; \
-                    ${CMD} ; \
-                } > \"${LOG_DIR}/output.log\" 2>> \"${LOG_DIR}/errors.log\""
-                commands+=("$FULL_CMD")
-            done
-
-        else
-
-            CMD="python main.py --datasets ${DATASETS} --approach ${approach} --seed ${seed} --log-dir ${LOG_DIR}${FLAT_FLAG}"
-            CMD+=" ${EXTRA_ARGS}"
-
-            if [[ -n "$GPU_ID" ]]; then
-                CMD="CUDA_VISIBLE_DEVICES=${GPU_ID} ${CMD}"
-            fi
-
-            FULL_CMD="{ echo \"$(printf '=%.0s' {1..100})\" ; \
-                echo \"Command: ${CMD}\" ; \
-                echo \"$(printf '=%.0s' {1..100})\" >&2 ; \
-                echo \"Command: ${CMD}\" >&2 ; \
-                ${CMD} ; \
-            } > \"${LOG_DIR}/output.log\" 2>> \"${LOG_DIR}/errors.log\""
-            commands+=("$FULL_CMD")
+        if [[ -n "$GPU_ID" ]]; then
+            CMD="CUDA_VISIBLE_DEVICES=${GPU_ID} ${CMD}"
         fi
+
+        FULL_CMD="{ echo \"$(printf '=%.0s' {1..100})\" ; \
+            echo \"Command: ${CMD}\" ; \
+            echo \"$(printf '=%.0s' {1..100})\" >&2 ; \
+            echo \"Command: ${CMD}\" >&2 ; \
+            ${CMD} ; \
+        } > \"${LOG_DIR}/output.log\" 2>> \"${LOG_DIR}/errors.log\""
+        commands+=("$FULL_CMD")
     done
 done
 
