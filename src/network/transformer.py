@@ -112,7 +112,7 @@ class BiflowTransformer(BaseNetwork):
 
     def forward(self, x, return_feat=False):
         embeddings = self.extract_features(x)
-        out = F.relu(embeddings) # Activate the embeddings
+        out = F.gelu(embeddings) # Activate the embeddings
         out = self.head(out)
         if return_feat:
             return out, embeddings

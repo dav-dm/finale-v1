@@ -82,32 +82,36 @@ class MetaEpisodicBatchSampler(Sampler):
         too_few_for_query = []
         no_support_left = []
         support_replacement_classes = []
+        n_samples = []
 
         for cls, idx in self.class_indices.items():
             n = len(idx)
 
             if n < self.q:
                 too_few_for_query.append(cls)
+                n_samples.append(n)
             elif n == self.q:
                 no_support_left.append(cls)
+                n_samples.append(n)
             elif n < needed:
                 support_replacement_classes.append(cls)
+                n_samples.append(n)
 
         if too_few_for_query:
             raise ValueError(
                 f"Some classes have fewer than q_query={self.q} samples: "
-                f"{too_few_for_query} has {n} samples. Cannot sample query without replacement."
+                f"{too_few_for_query} has {n_samples} samples. Cannot sample query without replacement."
             )
         if no_support_left:
             raise ValueError(
                 f"Some classes have exactly q_query={self.q} samples: "
-                f"{no_support_left} has {n} samples. No samples would remain for support."
+                f"{no_support_left} has {n_samples} samples. No samples would remain for support."
             )
         if support_replacement_classes:
             print(
                 f"WARNING: {len(support_replacement_classes)} class(es) have fewer "
-                f"than k_shot + q_query = {needed} samples: "
-                f"{support_replacement_classes}. "
+                f"than k_shot + q_query samples"
+                f": {support_replacement_classes} has {n_samples} samples. "
                 f"Sampling support with replacement for those."
             )
 

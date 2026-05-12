@@ -126,7 +126,7 @@ You can manually run experiments by navigating to the `src` directory and execut
 python main.py --datasets <dataset_1> <dataset_2> <dataset_3> --approach random_forest --rf-n-estimators 1000 --is-flat --log-dir ../results/rf_run
 
 # Example 1-TASK DEEP LEARNING: run a Scratch baseline
-python main.py --datasets <dataset_1> --approach scratch --max-epochs 20 --log-dir ./results_scratch --gpu
+python main.py --datasets <dataset_1> --approach scratch --max-epochs 20 --log-dir ../results_scratch --gpu
 
 # Example META-LEARNING: run MatchingNet, meta-training on <source_dataset> and meta-testining on <target_dataset>
 python main.py --datasets <source_dataset> <target_dataset> --approach matching_net --max-epochs 20 --train-k 5 --train-q 5 --k 5 --num-ways 5 --seed 0 --log-dir ../results/example_run

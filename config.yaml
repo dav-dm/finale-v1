@@ -15,10 +15,10 @@ pad_value: &pad_value -1
 train_test_split: 0.7
 train_val_split: 0.9
 scaler: 'minmax_symlog' # 'minmax_symlog' or 'minmax'
-linear_fraction: 0.7
+linear_fraction: 1
 symlog_params:
-  PL:  [*pad_value, 1500 , 65535]
-  IAT: [*pad_value, 60000000]
+  PL:  [*pad_value, 1500]
+  IAT: [*pad_value, 60000]
   DIR: [0, 1]
   WIN: [*pad_value, 65535]
   FLG: [*pad_value, 255]
