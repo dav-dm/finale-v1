@@ -98,14 +98,9 @@ def _preprocess_dataframe(df, label_column, parent_dir, config):
 
         # Field scaling
         if config['scaler'] == 'minmax_symlog':
-            # Special handling for IAT: use log10 normalization
-            if f == 'IAT':
-                df[f'SCALED_{f}'] = df[f].apply(
-                    lambda x: _log10_normalization(x, config['symlog_params'][f]))
-            else:
-                df[f'SCALED_{f}'] = df[f].apply(
-                    lambda x: _symlog_normalization(
-                        x, config['symlog_params'][f], linear_fraction=config['linear_fraction']))
+            df[f'SCALED_{f}'] = df[f].apply(
+                lambda x: _symlog_normalization(
+                    x, config['symlog_params'][f], linear_fraction=config['linear_fraction']))
         else:
             scaler = MinMaxScaler((0, 1))
             scaler.fit(np.concatenate(df[f].values, axis=0).reshape(-1, 1))
@@ -128,67 +123,6 @@ def _process_row(row, num_pkts):
     stacked = np.stack(field_arrays, axis=0)
     # Transpose to (num_pkts, F) and add a new axis at the beginning => (1, num_pkts, F)
     return np.expand_dims(stacked.T, axis=0)
-
-
-def _log10_normalization(x, p):
-    """
-    Applies log10-based normalization to the input array.
-    This is specifically designed for IAT (Inter-Arrival Time) which has long-tail distribution.
-    
-    Args:
-        x (np.ndarray): Input array to be scaled.
-        p (tuple): Scaling parameters [v_min, v_clip] or [v_min, v_lin, v_clip].
-                   - 2 elements: log10 scaling from v_min to v_clip
-                   - 3 elements: linear from v_min to v_lin, then log10 from v_lin to v_clip
-    
-    Returns:
-        np.ndarray: Scaled array with values normalized between 0 and 1.
-    """
-    x = np.asarray(x, dtype=np.float64)
-    
-    # Handle zero and negative values (set to a small positive value for log10)
-    eps = 1e-10
-    x = np.maximum(x, eps)
-    
-    if len(p) == 2:
-        v_min, v_clip = p
-        v_min = max(v_min, eps)  # Ensure v_min is positive for log10
-        v_clip = max(v_clip, eps)
-        
-        x = np.clip(x, v_min, v_clip)
-        
-        # Log10 normalization: log10(x) / log10(v_clip)
-        log_x = np.log10(x)
-        log_min = np.log10(v_min)
-        log_clip = np.log10(v_clip)
-        
-        return (log_x - log_min) / (log_clip - log_min)
-    
-    # len == 3: linear + log10 hybrid
-    v_min, v_lin, v_clip = p
-    v_min = max(v_min, eps)
-    v_lin = max(v_lin, eps)
-    v_clip = max(v_clip, eps)
-    
-    x = np.clip(x, v_min, v_clip)
-    
-    m_lin = x <= v_lin
-    m_log = ~m_lin
-    
-    out = np.empty_like(x, dtype=np.float64)
-    
-    # Linear part: map to [0, 0.5]
-    if m_lin.any():
-        out[m_lin] = (x[m_lin] - v_min) / (v_lin - v_min) * 0.5
-    
-    # Log10 part: map to [0.5, 1.0]
-    if m_log.any():
-        log_x = np.log10(x[m_log])
-        log_lin = np.log10(v_lin)
-        log_clip = np.log10(v_clip)
-        out[m_log] = 0.5 + 0.5 * (log_x - log_lin) / (log_clip - log_lin)
-    
-    return out
 
 
 def _symlog_normalization(x, p, linear_fraction=0.9):
