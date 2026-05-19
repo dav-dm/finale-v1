@@ -1,7 +1,5 @@
 import numpy as np
-import torch
 from torch.utils.data import Sampler
-from functools import partial
 
 
 class EpisodicBatchSampler(Sampler):
@@ -82,32 +80,59 @@ class MetaEpisodicBatchSampler(Sampler):
         too_few_for_query = []
         no_support_left = []
         support_replacement_classes = []
+<<<<<<< HEAD
+=======
+        n_samples = []
+>>>>>>> e0418c5ace2aaa2cd9ddaecdb859bbab0bfbce74
 
         for cls, idx in self.class_indices.items():
             n = len(idx)
 
             if n < self.q:
                 too_few_for_query.append(cls)
+<<<<<<< HEAD
             elif n == self.q:
                 no_support_left.append(cls)
             elif n < needed:
                 support_replacement_classes.append(cls)
+=======
+                n_samples.append(n)
+            elif n == self.q:
+                no_support_left.append(cls)
+                n_samples.append(n)
+            elif n < needed:
+                support_replacement_classes.append(cls)
+                n_samples.append(n)
+>>>>>>> e0418c5ace2aaa2cd9ddaecdb859bbab0bfbce74
 
         if too_few_for_query:
             raise ValueError(
                 f"Some classes have fewer than q_query={self.q} samples: "
+<<<<<<< HEAD
                 f"{too_few_for_query} has {n} samples. Cannot sample query without replacement."
+=======
+                f"{too_few_for_query} has {n_samples} samples. Cannot sample query without replacement."
+>>>>>>> e0418c5ace2aaa2cd9ddaecdb859bbab0bfbce74
             )
         if no_support_left:
             raise ValueError(
                 f"Some classes have exactly q_query={self.q} samples: "
+<<<<<<< HEAD
                 f"{no_support_left} has {n} samples. No samples would remain for support."
+=======
+                f"{no_support_left} has {n_samples} samples. No samples would remain for support."
+>>>>>>> e0418c5ace2aaa2cd9ddaecdb859bbab0bfbce74
             )
         if support_replacement_classes:
             print(
                 f"WARNING: {len(support_replacement_classes)} class(es) have fewer "
+<<<<<<< HEAD
                 f"than k_shot + q_query = {needed} samples: "
                 f"{support_replacement_classes}. "
+=======
+                f"than k_shot + q_query samples"
+                f": {support_replacement_classes} has {n_samples} samples. "
+>>>>>>> e0418c5ace2aaa2cd9ddaecdb859bbab0bfbce74
                 f"Sampling support with replacement for those."
             )
 

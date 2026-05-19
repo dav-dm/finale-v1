@@ -98,6 +98,7 @@ def _preprocess_dataframe(df, label_column, parent_dir, config):
 
         # Field scaling
         if config['scaler'] == 'minmax_symlog':
+<<<<<<< HEAD
             # Special handling for IAT: use log10 normalization
             if f == 'IAT':
                 df[f'SCALED_{f}'] = df[f].apply(
@@ -106,6 +107,11 @@ def _preprocess_dataframe(df, label_column, parent_dir, config):
                 df[f'SCALED_{f}'] = df[f].apply(
                     lambda x: _symlog_normalization(
                         x, config['symlog_params'][f], linear_fraction=config['linear_fraction']))
+=======
+            df[f'SCALED_{f}'] = df[f].apply(
+                lambda x: _symlog_normalization(
+                    x, config['symlog_params'][f], linear_fraction=config['linear_fraction']))
+>>>>>>> e0418c5ace2aaa2cd9ddaecdb859bbab0bfbce74
         else:
             scaler = MinMaxScaler((0, 1))
             scaler.fit(np.concatenate(df[f].values, axis=0).reshape(-1, 1))
@@ -130,6 +136,7 @@ def _process_row(row, num_pkts):
     return np.expand_dims(stacked.T, axis=0)
 
 
+<<<<<<< HEAD
 def _log10_normalization(x, p):
     """
     Applies log10-based normalization to the input array.
@@ -191,6 +198,8 @@ def _log10_normalization(x, p):
     return out
 
 
+=======
+>>>>>>> e0418c5ace2aaa2cd9ddaecdb859bbab0bfbce74
 def _symlog_normalization(x, p, linear_fraction=0.9):
     """
     Applies a symmetric logarithmic scaling to the input array based on the provided parameters.
