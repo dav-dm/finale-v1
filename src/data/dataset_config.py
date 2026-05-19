@@ -4,7 +4,6 @@ cf = load_config()
 _BASE_DATA_PATH = cf['base_data_path']
 
 dataset_config = {
-<<<<<<< HEAD
     'iot23': {
         'path': (
             f'{_BASE_DATA_PATH}/iot23_clean/'
@@ -85,17 +84,10 @@ dataset_config = {
     'cic-iomt': {
         'path': (
             f'{_BASE_DATA_PATH}/cic-iomt/'
-=======
-    # Full datasets
-    'cic_iomt': {
-        'path': (
-            f'{_BASE_DATA_PATH}/dac_26/cic_iomt/'
->>>>>>> e0418c5ace2aaa2cd9ddaecdb859bbab0bfbce74
             'cic-iomt_firstDIRfixed_100pkts_7f_1p-mt1m_10p-mt100k_clean_uniform-label.parquet'
         ),
         'label_column': 'LABEL',
     },
-<<<<<<< HEAD
     'edge-iiot_nf': {
         'path': (
             f'{_BASE_DATA_PATH}/edge-iiot_nf/'
@@ -138,64 +130,4 @@ dataset_config = {
         ),
         'label_column': 'LABEL',
     }
-=======
-    'edge_iiot': {
-        'path': (
-            f'{_BASE_DATA_PATH}/dac_26/edge_iiot/'
-            'edge-iiot_firstDIRfixed_100pkts_6f_50p-benign_1p-mt100k_clean_uniform-label.parquet'
-        ),
-        'label_column': 'LABEL',
-    },
-    'ton_iot': {
-        'path': (
-            f'{_BASE_DATA_PATH}/dac_26/ton_iot/'
-            'ton-iot_100pkts_firstDIRfixed_PLfixed_6f_1p-mt1m_10p-mt100k_clean_uniform-label.parquet'
-        ),
-        'label_column': 'LABEL',
-    },
-    # Few-shot partitions
-    'cic_iomt_f': {
-        'path': (
-            f'{_BASE_DATA_PATH}/dac_26/cic_iomt_f/'
-            'iomt_few.parquet'
-        ),
-        'label_column': 'LABEL',
-    },
-    'edge_iiot_f': {
-        'path': (
-            f'{_BASE_DATA_PATH}/dac_26/edge_iiot_f/'
-            'edge_few.parquet'
-        ),
-        'label_column': 'LABEL',
-    },
-    'ton_iot_f': {
-        'path': (
-            f'{_BASE_DATA_PATH}/dac_26/ton_iot_f/'
-            'ton_few.parquet'
-        ),
-        'label_column': 'LABEL',
-    },
-    # Non-few-shot partitions
-    'cic_iomt_nf': {
-        'path': (
-            f'{_BASE_DATA_PATH}/dac_26/cic_iomt_nf/'
-            'iomt_nonfew.parquet'
-        ),
-        'label_column': 'LABEL',
-    },
-    'edge_iiot_nf': {
-        'path': (
-            f'{_BASE_DATA_PATH}/dac_26/edge_iiot_nf/'
-            'edge_nonfew.parquet'
-        ),
-        'label_column': 'LABEL',
-    },
-    'ton_iot_nf': {
-        'path': (
-            f'{_BASE_DATA_PATH}/dac_26/ton_iot_nf/'
-            'ton_nonfew.parquet'
-        ),
-        'label_column': 'LABEL',
-    },
->>>>>>> e0418c5ace2aaa2cd9ddaecdb859bbab0bfbce74
 }
