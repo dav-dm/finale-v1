@@ -2,7 +2,8 @@ import yaml
 import torch
 from pathlib import Path
 
-def load_config(config_path="../config.yaml"):
+
+def load_config(config_path="config.yaml"):
     """
     Loads configuration from a YAML file.
 

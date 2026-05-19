@@ -66,5 +66,68 @@ dataset_config = {
             'dataset_100pkt_5f_payload_df_exact_noNullver_no0load_noMaps_b8829cf2.parquet'
         ),
         'label_column': 'LABEL',
+    },
+    'edge-iiot': {
+        'path': (
+            f'{_BASE_DATA_PATH}/edge-iiot/'
+            'edge-iiot_firstDIRfixed_100pkts_6f_50p-benign_1p-mt100k_clean_uniform-label.parquet'
+        ),
+        'label_column': 'LABEL',
+    },
+    'ton-iot': {
+        'path': (
+            f'{_BASE_DATA_PATH}/ton-iot/'
+            'ton-iot_100pkts_firstDIRfixed_PLfixed_6f_1p-mt1m_10p-mt100k_clean_uniform-label.parquet'
+        ),
+        'label_column': 'LABEL',
+    },
+    'cic-iomt': {
+        'path': (
+            f'{_BASE_DATA_PATH}/cic-iomt/'
+            'cic-iomt_firstDIRfixed_100pkts_7f_1p-mt1m_10p-mt100k_clean_uniform-label.parquet'
+        ),
+        'label_column': 'LABEL',
+    },
+    'edge-iiot_nf': {
+        'path': (
+            f'{_BASE_DATA_PATH}/edge-iiot_nf/'
+            'edge-iiot_firstDIRfixed_100pkts_6f_50p-benign_1p-mt100k_clean_uniform-label_nf.parquet'
+        ),
+        'label_column': 'LABEL',
+    },
+    'ton-iot_nf': {
+        'path': (
+            f'{_BASE_DATA_PATH}/ton-iot_nf/'
+            'ton-iot_100pkts_firstDIRfixed_PLfixed_6f_1p-mt1m_10p-mt100k_clean_uniform-label_nf.parquet'
+        ),
+        'label_column': 'LABEL',
+    },
+    'cic-iomt_nf': {
+        'path': (
+            f'{_BASE_DATA_PATH}/cic-iomt_nf/'
+            'cic-iomt_firstDIRfixed_100pkts_7f_1p-mt1m_10p-mt100k_clean_uniform-label_nf.parquet'
+        ),
+        'label_column': 'LABEL',
+    },
+    'edge-iiot_f': {
+        'path': (
+            f'{_BASE_DATA_PATH}/edge-iiot_f/'
+            'edge-iiot_firstDIRfixed_100pkts_6f_50p-benign_1p-mt100k_clean_uniform-label_f.parquet'
+        ),
+        'label_column': 'LABEL',
+    },
+    'ton-iot_f': {
+        'path': (
+            f'{_BASE_DATA_PATH}/ton-iot_f/'
+            'ton-iot_100pkts_firstDIRfixed_PLfixed_6f_1p-mt1m_10p-mt100k_clean_uniform-label_f.parquet'
+        ),
+        'label_column': 'LABEL',
+    },
+    'cic-iomt_f': {
+        'path': (
+            f'{_BASE_DATA_PATH}/cic-iomt_f/'
+            'cic-iomt_firstDIRfixed_100pkts_7f_1p-mt1m_10p-mt100k_clean_uniform-label_f.parquet'
+        ),
+        'label_column': 'LABEL',
     }
 }

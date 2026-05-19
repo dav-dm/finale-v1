@@ -9,5 +9,7 @@ torch
 torchmetrics
 tqdm
 xgboost
-qpth
+qpth @ file:///nas/home/gruppo-1/repo-gruppo-1/qpth
 pyarrow
+lightning-utilities
+packaging

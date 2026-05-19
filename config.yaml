@@ -1,8 +1,8 @@
 # config.yaml
 
 # DATA, DATASET
-base_data_path: "../../data"
-datasets:
+base_data_path: "/nas/data/datasets/"
+datasets: 
 
 # INPUT
 num_pkts: 20
