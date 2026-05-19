@@ -9,7 +9,7 @@ class EpisodicBatchSampler(Sampler):
     for all classes present in the partition.
     """
     def __init__(self, labels, k, seed):
-        super().__init__(None)
+        super().__init__()
         if k < 1:
             raise ValueError(f'k must be at least 1, got {k}')
         labels = np.asarray(labels)
@@ -43,7 +43,7 @@ class MetaEpisodicBatchSampler(Sampler):
     and for each class k support samples and q query samples are drawn.
     """
     def __init__(self, labels, num_episodes, num_ways, k_shot, q_query, seed):
-        super().__init__(None)
+        super().__init__()
 
         if num_ways < 2:
             raise ValueError(f"num_ways must be at least 2, got {num_ways}")
